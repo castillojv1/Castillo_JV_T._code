@@ -1,0 +1,194 @@
+class Room:
+    def __init__(self, room_number, price, has_aircon, has_wifi, has_water):
+        self.room_number = room_number
+        self.price = price
+        self.has_aircon = has_aircon
+        self.has_wifi = has_wifi
+        self.has_water = has_water
+        self.is_available = True
+
+    def display_details(self):
+        print(f"Room {self.room_number} - ", end="")
+        if self.has_aircon:
+            print("Aircon - ", end="")
+        if self.has_wifi:
+            print("Free WiFi - ", end="")
+        if self.has_water:
+            print("Water - ", end="")
+        print(f"Price per month: Php {self.price}")
+
+    def reserve(self):
+        self.is_available = False
+
+    def free_room(self):
+        self.is_available = True
+
+
+class Customer:
+    def __init__(self, username, password, name, contact, email):
+        self.username = username
+        self.password = password
+        self.name = name
+        self.contact = contact
+        self.email = email
+
+
+ADMIN_USERNAME = "JV"
+ADMIN_PASSWORD = "pogiako"
+
+
+def get_input(prompt):
+    while True:
+        user_input = input(prompt)
+        if user_input.strip():
+            return user_input
+        print("You need to input something.")
+
+
+def customer_menu(rooms, current_customer):
+    while True:
+        print("\n***** Dormitory Reservation *****")
+        print("1. View Available Rooms")
+        print("2. Rent a Room")
+        print("3. Logout")
+        choice = int(input("Choose an option: "))
+
+        if choice == 1:
+            print("\nAvailable Rooms:")
+            available_rooms = False
+            for room in rooms:
+                if room.is_available:
+                    room.display_details()
+                    available_rooms = True
+            if not available_rooms:
+                print("No rooms available at the moment.")
+        elif choice == 2:
+            roomnum = int(input("Enter room number: "))
+            room_found = False
+            for room in rooms:
+                if room.room_number == roomnum:
+                    room_found = True
+                    if room.is_available:
+                        room.reserve()
+                        print("Room reserved successfully!\n--------------------------------------------------------")
+                        print("Reservation details:\n--------------------------------------------------------")
+                        print(f"Name: {current_customer.name}")
+                        print(f"Contact: {current_customer.contact}")
+                        print(f"Email: {current_customer.email}")
+                        room.display_details()
+                        print("--------------------------------------------------------\nPlease go to the Counter to pay and talk the details further.")
+                    else:
+                        print(f"Sorry, Room {roomnum} is already reserved.")
+                    break
+            if not room_found:
+                print("Room not found. Please choose a valid room number.")
+        elif choice == 3:
+            print("Logging out...")
+            break
+        else:
+            print("Invalid choice, try again.")
+
+
+def admin_menu(rooms):
+    while True:
+        print("\n***** Admin Menu *****")
+        print("1. View All Rooms")
+        print("2. Manage Rooms (Mark Reserved/Available)")
+        print("3. Logout")
+        choice = int(input("Choose an option: "))
+
+        if choice == 1:
+            print("\nAll Rooms:")
+            for room in rooms:
+                room.display_details()
+                print(f"Status: {'Available' if room.is_available else 'Reserved'}")
+                print("-----------------------------")
+        elif choice == 2:
+            room_number = int(input("Enter the room number to manage: "))
+            room_found = False
+            for room in rooms:
+                if room.room_number == room_number:
+                    room_found = True
+                    print("Room found: ")
+                    room.display_details()
+                    print(f"Current Status: {'Available' if room.is_available else 'Reserved'}")
+
+                    change_status = input("Would you like to change the status? (y/n): ").strip().lower()
+                    if change_status == 'y':
+                        room.is_available = not room.is_available
+                        print("Room status updated.")
+                    else:
+                        print("No changes made.")
+                    break
+            if not room_found:
+                print(f"Room number {room_number} not found.")
+        elif choice == 3:
+            print("Logging out...")
+            break
+        else:
+            print("Invalid choice. Please select a valid option.")
+
+
+def main():
+    rooms = [
+        Room(101, 2500, True, True, True),
+        Room(102, 2500, True, True, True),
+        Room(103, 2000, False, True, True),
+        Room(104, 2000, True, True, False),
+        Room(105, 1500, False, True, False)
+    ]
+    
+    customers = []
+    while True:
+        is_logged_in = False
+        while not is_logged_in:
+            print("\n***** Login *****")
+            print("1. Admin Login")
+            print("2. Customer Login")
+            print("3. Customer Registration")
+            print("4. Exit")
+            choice = int(input("Choose your role: "))
+
+            if choice == 1:
+                admin_username = input("Admin Username: ")
+                admin_password = input("Admin Password: ")
+
+                if admin_username == ADMIN_USERNAME and admin_password == ADMIN_PASSWORD:
+                    print("Admin login successful!")
+                    is_logged_in = True
+                    admin_menu(rooms)
+                else:
+                    print("Invalid Admin credentials. Try again.")
+            elif choice == 2:
+                username = input("Enter username: ")
+                password = input("Enter password: ")
+
+                customer_found = False
+                for customer in customers:
+                    if customer.username == username and customer.password == password:
+                        customer_found = True
+                        print("Customer login successful!")
+                        is_logged_in = True
+                        customer_menu(rooms, customer)
+                        break
+                if not customer_found:
+                    print("Invalid Customer credentials.")
+            elif choice == 3:
+                reg_username = get_input("Enter username: ")
+                reg_password = get_input("Enter password: ")
+                name = get_input("Enter name: ")
+                contact = get_input("Enter contact number: ")
+                email = get_input("Enter email: ")
+
+                new_customer = Customer(reg_username, reg_password, name, contact, email)
+                customers.append(new_customer)
+                print("Customer registration successful!")
+            elif choice == 4:
+                print("Exiting...")
+                exit()
+            else:
+                print("Invalid choice, try again.")
+
+
+if __name__ == "__main__":
+    main()
